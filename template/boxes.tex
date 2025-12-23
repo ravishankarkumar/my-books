@@ -1,0 +1,40 @@
+% template/boxes.tex
+
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+% Design decision box
+\newtcolorbox{designbox}{
+  breakable,
+  colback=gray!5,
+  colframe=black,
+  title=Design Decision,
+  fonttitle=\bfseries
+}
+
+% Trade-off box
+\newtcolorbox{tradeoff}{
+  breakable,
+  colback=white,
+  colframe=black,
+  title=Trade-off,
+  fonttitle=\bfseries
+}
+
+% Interview tip box
+\newtcolorbox{interviewtip}{
+  breakable,
+  colback=black!5,
+  colframe=black,
+  title=Interview Tip,
+  fonttitle=\bfseries
+}
+
+% Failure mode box
+\newtcolorbox{failuremode}{
+  breakable,
+  colback=red!5,
+  colframe=red!60!black,
+  title=Failure Mode,
+  fonttitle=\bfseries
+}

@@ -1,0 +1,29 @@
+\chapter{URL Shortener}
+
+\section{Problem Statement}
+Design a service that shortens long URLs and redirects efficiently.
+
+\section{Requirements}
+\begin{itemize}
+  \item High availability
+  \item Low latency
+  \item Massive scale
+\end{itemize}
+
+\begin{designbox}
+We use a centralized ID generator to avoid collisions.
+\end{designbox}
+
+\section{High-Level Architecture}
+
+\begin{tradeoff}
+Centralized ID generation simplifies consistency but adds a bottleneck.
+\end{tradeoff}
+
+\begin{interviewtip}
+Always clarify read/write ratio before choosing a datastore.
+\end{interviewtip}
+
+\begin{failuremode}
+If the ID service goes down, URL creation halts completely.
+\end{failuremode}

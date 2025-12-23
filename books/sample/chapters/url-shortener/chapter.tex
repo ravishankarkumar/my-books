@@ -1,0 +1,136 @@
+\chapter{URL Shortener}
+
+\section{Problem Statement}
+Design a scalable service that takes long URLs and generates shortened versions, while efficiently redirecting users from the short URL to the original long URL. This is similar to services like TinyURL or Bit.ly, which handle billions of redirects per month \cite{bytebytego2023}.
+
+The core functionality involves:
+- Encoding: Convert a long URL into a short alias (e.g., https://example.com/very/long/path → https://short.ly/abc123).
+- Decoding: Redirect from the short URL to the original.
+- Optional features: Custom aliases, expiration, analytics (click tracking).
+
+\section{Requirements}
+
+\subsection{Functional Requirements}
+\begin{itemize}
+  \item Users can submit a long URL and receive a unique short URL.
+  \item Clicking the short URL redirects (HTTP 301/302) to the original URL.
+  \item Support for custom short URLs if available.
+  \item URLs should not expire by default, but optional TTL (time-to-live) can be added.
+  \item Track basic analytics: Number of clicks, geolocation, referrers.
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+\begin{itemize}
+  \item \textbf{High Availability}: The service should be up 99.99\% of the time, with no single point of failure.
+  \item \textbf{Low Latency}: Redirects should take < 200ms; shortening < 100ms.
+  \item \textbf{Massive Scale}: Handle 1 billion new URLs/month, 10 billion redirects/month \cite{hellointerview2024}.
+  \item \textbf{Security}: Prevent abuse (e.g., rate limiting, CAPTCHA for bulk creation), handle malicious URLs.
+  \item \textbf{Data Durability}: Stored mappings should persist even in failures.
+\end{itemize}
+
+\begin{interviewtip}
+Start by clarifying requirements: Ask about scale (QPS for reads/writes), custom features, and analytics needs. This shows you understand real-world constraints.
+\end{interviewtip}
+
+\section{High-Level Architecture}
+
+The system can be divided into key components:
+- \textbf{API Layer}: Handles URL shortening requests (POST) and redirects (GET).
+- \textbf{ID Generator}: Creates unique short keys (e.g., 7-10 characters).
+- \textbf{Storage}: Key-value store for short-to-long mappings.
+- \textbf{Cache}: For hot redirects to reduce database load.
+- \textbf{Analytics Service}: Optional, using message queues for click tracking.
+
+\subsection{Short Key Generation}
+Options for generating unique keys:
+1. \textbf{Hashing}: Use MD5 or SHA-256 on the long URL, then encode to Base62 (a-zA-Z0-9). Handle collisions by appending counters.
+2. \textbf{Counter-Based}: Use a distributed counter (e.g., ZooKeeper or database auto-increment) to generate sequential IDs, then Base62 encode.
+3. \textbf{UUID}: Generate random UUIDs and encode, but check for collisions.
+
+\begin{designbox}
+We choose a counter-based approach with Base62 encoding for predictability and shortness. For example, ID 123456789 → "7W3Xg" (5 chars). This avoids hashing collisions and allows shorter keys at scale \cite{designgurus}.
+\end{designbox}
+
+\begin{tradeoff}
+Hashing is stateless but risks collisions (birthday problem: 50 \% chance at 10\^9 keys for 62\^7 space). Counter-based requires a centralized/distributed ID service, adding complexity but guaranteeing uniqueness.
+\end{tradeoff}
+
+\subsection{Storage Choices}
+- \textbf{Cache}: Redis for frequent redirects (e.g., TTL 1 day for hot keys).
+- \textbf{Sharding}: By short key prefix (e.g., 'a'-'m' on shard 1) to distribute load.
+
+For massive scale, use consistent hashing to minimize reshuffling during scaling.
+
+\begin{failuremode}
+If the database shard fails, redirects for that key range stop. Mitigate with replication (3+ replicas) and failover.
+\end{failuremode}
+
+\subsection{Redirect Flow}
+1. User requests short URL.
+2. API checks cache → hit: redirect immediately.
+3. Miss: Query DB → redirect and cache.
+4. Handle 404 if not found.
+
+For analytics: On redirect, async publish to Kafka queue for processing.
+
+\begin{interviewtip}
+Discuss read-heavy nature: Redirects (reads) are 100-1000x more than creations (writes). Optimize for reads with caching and CDNs.
+\end{interviewtip}
+
+\section{Scaling Considerations}
+
+\subsection{Horizontal Scaling}
+- API servers: Stateless, load-balanced with auto-scaling.
+- Database: Partition by key range or hash.
+- ID Generator: Use a Key Generation Service (KGS) that pre-generates keys in batches to avoid bottlenecks \cite{reddit2021}.
+
+\subsection{Rate Limiting and Security}
+- Use token bucket (Redis) to limit creations per IP/user.
+- Validate URLs: Check for malware using services like Google Safe Browsing.
+- Prevent loops: Disallow shortening already short URLs.
+
+\subsection{Edge Cases}
+- Very long URLs (> 2048 chars): Truncate or reject.
+- Custom URLs: Check availability in DB before assigning.
+- Expiration: Add cron jobs to purge old entries.
+- Internationalization: Handle Unicode URLs with punycode.
+
+\begin{tradeoff}
+Supporting analytics increases write load (each click logs data). Use eventual consistency for counts to reduce latency.
+\end{tradeoff}
+
+\begin{failuremode}
+High traffic spike overwhelms the ID generator. Solution: Rate limit creations and use redundant KGS instances.
+\end{failuremode}
+
+\section{Architecture Diagram}
+
+% Placeholder for a figure; in real content, create a diagram with draw.io or TikZ and export to PDF
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{chapters/url-shortener/figures/url-shortener-architecture.pdf}
+  \caption{High-Level Architecture of URL Shortener Service}
+  \label{fig:url-arch}
+\end{figure}
+
+The diagram shows: Client → Load Balancer → API Servers → Cache/DB → Redirect. Include KGS and Analytics queues.
+
+\section{Performance Estimation}
+- Storage: 1 billion URLs  (100 bytes long URL + metadata) = 100 GB. Scalable with sharding.
+- QPS: 10 billion redirects/month = 3850 QPS average, 10x peak.
+- Latency: Cache hit <10ms, DB query <50ms.
+
+\begin{designbox}
+Pre-generate keys in KGS and store in a "unused keys" DB table for fast retrieval during shortening.
+\end{designbox}
+
+\section{References and Further Reading}
+For deeper dives, see the cited sources. Expand on real-world implementations like Bit.ly's use of Bigtable-inspired stores \cite{chang2008}.
+
+% In your chapter, add more content here as needed, using lorem ipsum or detailed explanations.
+% Lorem ipsum example for padding:
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat \cite{geeksforgeeks2025}.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Add more sections or subsections as your real content grows, such as "Deployment Strategy" or "Monitoring".

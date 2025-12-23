@@ -1,0 +1,14 @@
+# latexmkrc — per-book build config
+
+@default_files = ('main.tex');
+
+$pdf_mode = 1;
+$interaction = 'nonstopmode';
+
+$pdflatex = 'pdflatex -synctex=1 -interaction=nonstopmode %O %S';
+$bibtex   = 'biber %O %B';
+
+$recorder = 1;
+
+$clean_ext = 'aux bbl blg bcf run.xml toc lof lot idx ilg ind out synctex.gz ptc';
+

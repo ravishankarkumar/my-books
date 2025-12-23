@@ -1,0 +1,33 @@
+% template/class.tex
+% Core book class configuration
+
+\documentclass[
+  11pt,
+  oneside,
+  openany
+]{memoir}
+
+% Page geometry
+\setstocksize{11in}{8.5in}
+\settrimmedsize{\stockheight}{\stockwidth}{*}
+\setlrmarginsandblock{1.25in}{1.25in}{*}
+\setulmarginsandblock{1.25in}{1.25in}{*}
+\checkandfixthelayout
+
+% Chapter/section numbering depth
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+
+% Part styling
+\renewcommand{\partname}{Part}
+\renewcommand{\partnumfont}{\Huge\bfseries}
+\renewcommand{\parttitlefont}{\Huge\bfseries}
+
+% Chapter styling
+\chapterstyle{default}
+
+% Disable automatic chapter numbering in frontmatter
+\renewcommand{\thechapter}{\arabic{chapter}}
+
+% Header/footer
+\pagestyle{ruled}

@@ -1,0 +1,50 @@
+% template/layout.tex
+
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+% ---------- Title Page ----------
+\newcommand{\maketitlepage}{
+  \thispagestyle{empty}
+
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.center) {
+      \includegraphics[
+        width=\paperwidth,
+        height=\paperheight
+      ]{\CoverImage}
+    };
+  \end{tikzpicture}
+
+  \vspace*{0.6\paperheight}
+
+  \begin{center}
+    {\Huge\bfseries\color{PrimaryColor}\BookTitle\par}
+    \vspace{1em}
+    {\Large\BookSubtitle\par}
+    \vspace{2em}
+    {\large\BookAuthor\par}
+  \end{center}
+
+  \cleardoublepage
+}
+
+% ---------- Part Divider ----------
+\newcommand{\partimage}[2]{
+  \cleardoublepage
+  \thispagestyle{empty}
+
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.center) {
+      \includegraphics[width=\paperwidth]{#1}
+    };
+  \end{tikzpicture}
+
+  \vspace*{0.6\paperheight}
+
+  \begin{center}
+    {\Huge\bfseries #2}
+  \end{center}
+
+  \cleardoublepage
+}

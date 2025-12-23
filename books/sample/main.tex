@@ -1,0 +1,37 @@
+% books/hld-interview/main.tex
+
+\input{../../template/class}
+
+\input{../../template/preamble}
+\input{branding}
+\input{../../template/layout}
+\input{../../template/boxes}
+
+\addbibresource{backmatter/references.bib}
+
+\begin{document}
+
+% ---------- Frontmatter ----------
+\frontmatter
+\maketitlepage
+\tableofcontents
+
+% ---------- Main content ----------
+\mainmatter
+
+\partimage{\PartImage}{Foundations}
+\part{Foundations}
+\include{parts/foundations}
+\include{chapters/consistency/chapter}
+\include{chapters/cap-theorem/chapter}
+
+\partimage{\PartImage}{System Design}
+\part{High-Level Design}
+\include{chapters/url-shortener/chapter}
+\include{chapters/notification-service/chapter}
+
+% ---------- Backmatter ----------
+\backmatter
+\printbibliography
+
+\end{document}

@@ -1,0 +1,44 @@
+% template/preamble.tex
+
+% Encoding & fonts
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Mathematics
+\usepackage{amsmath,amssymb}
+
+% Graphics
+\usepackage{graphicx}
+\graphicspath{{images/}}
+
+% Colors
+\usepackage{xcolor}
+
+% Hyperlinks (loaded late)
+\usepackage[
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=black,
+  citecolor=black
+]{hyperref}
+
+% Lists
+\usepackage{enumitem}
+\setlist{nosep}
+
+% Tables
+\usepackage{booktabs}
+
+% Code blocks (optional, but useful for LLD)
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single
+}
+
+% Bibliography (BibLaTeX)
+\usepackage[
+  backend=biber,
+  style=alphabetic
+]{biblatex}
